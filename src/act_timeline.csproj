@@ -87,6 +87,12 @@
     </Compile>
     <Compile Include="Globals.cs" />
     <Compile Include="3rdparty\IntervalTree.cs" />
+    <Compile Include="GraphicsExtension.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="SynthesizerWrapper.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="OverlayButtonsForm.cs">
@@ -117,6 +123,13 @@
       <DependentUpon>OverlayButtonsForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TimelineView.resx">
+      <DependentUpon>TimelineView.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -146,12 +159,16 @@
       <HintPath>3rdparty\Advanced Combat Tracker.exe</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="LibZ.Bootstrap">
-      <HintPath>packages\LibZ.Bootstrap.1.1.0.2\lib\net40-client\LibZ.Bootstrap.dll</HintPath>
+    <Reference Include="LibZ.Bootstrap, Version=1.1.0.2, Culture=neutral, PublicKeyToken=3531cb54cd6f3ef0, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\AppData\Roaming\NuGet\.packages\LibZ.Bootstrap.1.1.0.2\lib\net40-client\LibZ.Bootstrap.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Sprache">
-      <HintPath>packages\Sprache.1.10.0.36\lib\net40\Sprache.dll</HintPath>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="Sprache, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\AppData\Roaming\NuGet\.packages\Sprache.2.1.0\lib\net40\Sprache.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -161,7 +178,21 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Speech" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.XML" />
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="rewind-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RewindIcon.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="play-icon.png" />
+    <Content Include="stop-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

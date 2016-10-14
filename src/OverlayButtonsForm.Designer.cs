@@ -28,50 +28,52 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.buttonRewind = new System.Windows.Forms.Button();
-            this.buttonPlayPause = new System.Windows.Forms.Button();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
-            // buttonRewind
+            // pictureBox2
             // 
-            this.buttonRewind.Location = new System.Drawing.Point(0, 0);
-            this.buttonRewind.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonRewind.Name = "buttonRewind";
-            this.buttonRewind.Size = new System.Drawing.Size(27, 20);
-            this.buttonRewind.TabIndex = 4;
-            this.buttonRewind.Text = "<<";
-            this.buttonRewind.UseVisualStyleBackColor = true;
-            this.buttonRewind.Click += new System.EventHandler(this.buttonRewind_Click);
+            this.pictureBox2.Image = global::ACTTimeline.Properties.Resources.play_icon;
+            this.pictureBox2.Location = new System.Drawing.Point(31, 3);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(19, 20);
+            this.pictureBox2.TabIndex = 6;
+            this.pictureBox2.TabStop = false;
+            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
-            // buttonPlayPause
+            // pictureBox1
             // 
-            this.buttonPlayPause.Location = new System.Drawing.Point(27, 0);
-            this.buttonPlayPause.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonPlayPause.Name = "buttonPlayPause";
-            this.buttonPlayPause.Size = new System.Drawing.Size(28, 20);
-            this.buttonPlayPause.TabIndex = 3;
-            this.buttonPlayPause.Text = "▷";
-            this.buttonPlayPause.UseVisualStyleBackColor = true;
-            this.buttonPlayPause.Click += new System.EventHandler(this.buttonPlayPause_Click);
+            this.pictureBox1.Image = global::ACTTimeline.Properties.Resources.rewind_icon;
+            this.pictureBox1.Location = new System.Drawing.Point(7, 3);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(19, 20);
+            this.pictureBox1.TabIndex = 5;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // OverlayButtonsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(55, 21);
-            this.Controls.Add(this.buttonPlayPause);
-            this.Controls.Add(this.buttonRewind);
+            this.Controls.Add(this.pictureBox2);
+            this.Controls.Add(this.pictureBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "OverlayButtonsForm";
             this.TopMost = true;
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button buttonRewind;
-        private System.Windows.Forms.Button buttonPlayPause;
-
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBox2;
     }
 }

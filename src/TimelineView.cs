@@ -5,10 +5,28 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Advanced_Combat_Tracker;
+using System.Runtime.InteropServices;
+using Plasmoid.Extensions;
 
 namespace ACTTimeline
 {
-    public class TimelineView : Form
+    public class ShadowedForm : Form
+    {
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                const int CS_DROPSHADOW = 0x20000;
+                CreateParams cp = base.CreateParams;
+                cp.ClassStyle |= CS_DROPSHADOW;
+                return cp;
+            }
+        }
+
+        // ... other code ...
+    }
+
+    public class TimelineView : ShadowedForm
     {
         private DataGridView dataGridView;
         private OverlayButtonsForm buttons;
@@ -109,6 +127,27 @@ namespace ACTTimeline
                 OnOpacityChanged();
             }
         }
+        private void dropShadow(object sender, PaintEventArgs e)
+        {
+            Form p = (Form)sender;
+            Color[] shadow = new Color[3];
+            shadow[0] = Color.FromArgb(181, 181, 181);
+            shadow[1] = Color.FromArgb(195, 195, 195);
+            shadow[2] = Color.FromArgb(211, 211, 211);
+            Pen pen = new Pen(shadow[0]);
+            using (pen)
+            {
+                Point pt = p.Location;
+                pt.Y += p.Height;
+                for (var sp = 0; sp < 3; sp++)
+                {
+                    pen.Color = shadow[sp];
+                    e.Graphics.DrawLine(pen, pt.X, pt.Y, pt.X + p.Width - 1, pt.Y);
+                    pt.Y++;
+                }
+            }
+        }
+
 
         public event EventHandler OpacityChanged;
         public void OnOpacityChanged()
@@ -141,9 +180,10 @@ namespace ACTTimeline
         private TimelineController controller;
         DataGridViewTextBoxColumn textColumn;
         TimeLeftColumn timeLeftColumn;
-        
+
         public TimelineView(TimelineController controller_)
         {
+            this.Paint += dropShadow;
             controller = controller_;
             controller.TimelineUpdate += controller_TimelineUpdate;
             controller.CurrentTimeUpdate += controller_CurrentTimeUpdate;
@@ -163,7 +203,7 @@ namespace ACTTimeline
                 SetValue(dataGridView, true, null);
             dataGridView.SelectionChanged += (object sender, EventArgs args) => dataGridView.ClearSelection();
             dataGridView.AutoGenerateColumns = false;
-            dataGridView.Columns.Add(textColumn = new DataGridViewTextBoxColumn { DataPropertyName = "Name", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dataGridView.Columns.Add(textColumn = new DescriptionColumn());
             dataGridView.Columns.Add(timeLeftColumn = new TimeLeftColumn { Controller = controller_ });
 
             MyOpacity = 0.8;
@@ -182,9 +222,22 @@ namespace ACTTimeline
             buttons.Visible = Visible && showOverlayButtons;
         }
 
+        [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+
+        private static extern IntPtr CreateRoundRectRgn(
+            int nLeftRect, // x-coordinate of upper-left corner
+            int nTopRect, // y-coordinate of upper-left corner
+            int nRightRect, // x-coordinate of lower-right corner
+            int nBottomRect, // y-coordinate of lower-right corner
+            int nWidthEllipse, // height of ellipse
+            int nHeightEllipse // width of ellipse
+            );
+
         private void SetupUI()
         {
-            dataGridView = new DataGridView();
+            Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width - 10, Height - 10, 20, 20));
+
+            dataGridView = new MyCustomDataGridView();
 
             ((System.ComponentModel.ISupportInitialize)(dataGridView)).BeginInit();
             this.SuspendLayout();
@@ -208,6 +261,10 @@ namespace ACTTimeline
             dataGridView.RowHeadersVisible = false;
             dataGridView.ScrollBars = ScrollBars.None;
             dataGridView.Size = new Size(200, 80);
+            dataGridView.DefaultCellStyle.BackColor = Color.Black;
+            dataGridView.DefaultCellStyle.ForeColor = Color.FromArgb(222, 215, 190);
+            dataGridView.BorderStyle = BorderStyle.None;
+            dataGridView.AdvancedCellBorderStyle.All = DataGridViewAdvancedCellBorderStyle.None;
 
             this.AutoScaleDimensions = new SizeF(6F, 13F);
             this.AutoScaleMode = AutoScaleMode.Font;
@@ -224,14 +281,25 @@ namespace ACTTimeline
             buttons = new OverlayButtonsForm(controller);
         }
 
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            //var hb = new HatchBrush(HatchStyle.Percent50, Color.Black);
+
+            //e.Graphics.FillRectangle(hb, this.DisplayRectangle);
+            this.BackColor = Color.Black;
+            base.OnPaint(e);
+        }
+
         void UpdateLayout()
         {
             int gridHeight = dataGridView.RowTemplate.Height * numberOfRowsToDisplay;
-            ClientSize = new Size(textWidth + barWidth, gridHeight);
-            dataGridView.Size = ClientSize;
+            Size s = new Size(textWidth + barWidth, gridHeight);
+            ClientSize = s;
+            dataGridView.Size = ClientSize - new Size(20,20);
+            Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, s.Width - 10, s.Height - 10, 20, 20));
 
-            textColumn.Width = textWidth;
-            timeLeftColumn.Width = barWidth;
+            textColumn.Width = textWidth + 20;
+            timeLeftColumn.Width = barWidth + 20;
 
             // update buttons location
             TimelineView_Move(this, EventArgs.Empty);
@@ -239,7 +307,7 @@ namespace ACTTimeline
 
         void TimelineView_Move(object sender, EventArgs e)
         {
-            buttons.Location = new Point(this.Location.X + textWidth + barWidth - buttons.Width, this.Location.Y - buttons.Height);
+            buttons.Location = new Point(this.Location.X + textWidth + barWidth - buttons.Width - 20, this.Location.Y + 1 - buttons.Height);
         }
 
         void TimelineView_FormClosing(object sender, FormClosingEventArgs e)
@@ -319,13 +387,90 @@ namespace ACTTimeline
             else if (PlaySoundByACT)
             {
                 ActGlobals.oFormActMain.PlaySoundMethod(alert.Sound.Filename, 100);
-            } 
-            else 
+            }
+            else
             {
                 soundplayer.PlaySound(alert.Sound.Filename);
             }
 
             alert.Processed = true;
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // TimelineView
+            // 
+            this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.Name = "TimelineView";
+            this.ResumeLayout(false);
+
+        }
+    }
+
+    public partial class MyCustomDataGridView : DataGridView
+    {
+        public MyCustomDataGridView()
+            : base()
+        {
+            //Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width - 10, Height - 10, 20, 20));
+        }
+    }
+
+
+    class DescriptionColumn : DataGridViewTextBoxColumn
+    {
+        public DescriptionColumn()
+        {
+            this.ReadOnly = true;
+            this.CellTemplate = new DescriptionCell();
+            this.DefaultCellStyle.Alignment = DataGridViewContentAlignment.BottomLeft;
+            this.DataPropertyName = "Name";
+            this.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+        }
+    }
+
+    class DescriptionCell : DataGridViewTextBoxCell
+    {
+        static private readonly Font ValueFont = new Font(FontFamily.GenericSansSerif, 12, FontStyle.Bold);
+        static private readonly StringFormat ValueStringFormat = new StringFormat { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Near };
+        static private readonly Pen ValuePen = new Pen(new SolidBrush(Color.FromArgb(121, 85, 22)), 1.0F) { LineJoin = LineJoin.Round };
+        static private readonly Brush ValueFill = new SolidBrush(Color.FromArgb(222, 215, 190));
+        public const int MARGIN = 4; // px
+        public const int MARGIN_X = 4; // px
+
+        protected override void Paint(Graphics graphics, Rectangle clipBounds, Rectangle cellBounds, int rowIndex, DataGridViewElementStates cellState, object value, object formattedValue, string errorText, DataGridViewCellStyle cellStyle, DataGridViewAdvancedBorderStyle advancedBorderStyle, DataGridViewPaintParts paintParts)
+        {
+            base.Paint(graphics, clipBounds, cellBounds, rowIndex, cellState, "", "", errorText, cellStyle, advancedBorderStyle, paintParts);
+
+            //TimelineActivity activity = (TimelineActivity)value;
+            //TimelineController controller = ((TimeLeftColumn)OwningColumn).Controller;
+
+            PaintText(graphics, cellBounds, value.ToString());
+        }
+
+
+        private static RectangleF DrawAreaFromCellBounds(Rectangle cellBounds)
+        {
+            return new RectangleF(cellBounds.X + MARGIN_X, cellBounds.Y + MARGIN, cellBounds.Width - MARGIN_X * 2, cellBounds.Height - MARGIN * 2);
+        }
+
+        private static void PaintText(Graphics graphics, Rectangle cellBounds, string valueString)
+        {
+            RectangleF drawArea = DrawAreaFromCellBounds(cellBounds);
+
+            RectangleF textRect = drawArea;
+
+            GraphicsPath pathText = new GraphicsPath();
+            pathText.AddString(valueString, ValueFont.FontFamily, (int)ValueFont.Style, ValueFont.Size, textRect, ValueStringFormat);
+
+            GraphicsState state = graphics.Save();
+            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            graphics.DrawPath(ValuePen, pathText);
+            graphics.FillPath(ValueFill, pathText);
+            graphics.Restore(state);
         }
     }
 
@@ -346,22 +491,22 @@ namespace ACTTimeline
     {
         public const float BAR_START = 10.0F;
         public const float THRESHOLD = 1.0F;
-        
+
         public const int MARGIN = 4; // px
 
         static private readonly Font ValueFont = new Font(FontFamily.GenericSansSerif, 12, FontStyle.Bold);
         static private readonly StringFormat ValueStringFormat = new StringFormat { Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Center };
-        static private readonly Pen ValuePen = new Pen(Brushes.White, 1.0F) { LineJoin = LineJoin.Round };
-        static private readonly Brush ValueFill = Brushes.Black;
+        static private readonly Pen ValuePen = new Pen(new SolidBrush(Color.FromArgb(121, 85, 22)), 1.0F) { LineJoin = LineJoin.Round };
+        static private readonly Brush ValueFill = new SolidBrush(Color.FromArgb(222, 215, 190));
 
         public static Color BarColorAtTimeLeft(float timeLeft)
         {
             if (timeLeft > 5)
-                return Color.GreenYellow;
+                return Color.DarkGreen;
             else if (timeLeft > 3)
-                return Color.Orange;
+                return Color.DarkOrange;
             else if (timeLeft > 0)
-                return Color.OrangeRed;
+                return Color.DarkRed;
             else
                 return Color.Red;
         }
@@ -447,7 +592,7 @@ namespace ACTTimeline
 
                 barFill.Width *= bar;
 
-                colorA = Color.Aqua;
+                colorA = Color.Navy;
                 colorB = ControlPaint.Light(colorA, 1.0F);
                 gradientRect = Rectangle.Ceiling(barFill);
             }
@@ -455,8 +600,8 @@ namespace ACTTimeline
             if (barFill.Width < 1.0F)
                 return;
 
-            Brush barBrush = new LinearGradientBrush(gradientRect, colorA, colorB, LinearGradientMode.Horizontal) { WrapMode = WrapMode.TileFlipX };
-            graphics.FillRectangle(barBrush, barFill);
+            Brush barBrush = new LinearGradientBrush(gradientRect, colorB, colorA, LinearGradientMode.Horizontal) { WrapMode = WrapMode.TileFlipX };
+            graphics.FillRoundedRectangle(barBrush, barFill,5);
         }
     }
 }
